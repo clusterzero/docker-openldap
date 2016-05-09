@@ -1,4 +1,4 @@
-NAME = clustercero/openldap
+NAME = clusterzero/openldap
 VERSION = 1.0.0
 
 .PHONY: all build build-nocache test tag_latest release
