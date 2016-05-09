@@ -1,0 +1,71 @@
+#!/bin/sh
+
+log () {
+  echo "---> $@"
+}
+
+configure () {
+  ulimit -n 1024
+  export LDAP_PASSWORD="${LDAP_PASSWORD}"
+	export LDAP_PASSWORD_ENCRYPTED="$(slappasswd -u -h '{SSHA}' -s ${LDAP_PASSWORD})"
+	export LDAP_ORGANIZATION="${LDAP_ORGANIZATION:-${LDAP_DOMAIN}}"
+	export LDAP_DOMAIN_RDC="$(echo ${LDAP_DOMAIN} | sed 's/^\.//; s/\..*$//')"
+	export LDAP_SUFFIX="${LDAP_SUFFIX:-$(echo dc=$(echo ${LDAP_DOMAIN} | sed 's/^\.//; s/\./,dc=/g'))}"
+	export LDAP_DOMAIN=${LDAP_DOMAIN}
+
+  if [[ ! -f /etc/openldap/.configured ]]
+  then
+    log "Setting up OpenLDAP configuration"
+    cat /etc/openldap/conf.tpl/slapd.conf.tpl  | envsubst > /etc/openldap/slapd.conf
+    cat /etc/openldap/conf.tpl/domain.ldif.tpl | envsubst > /etc/openldap/domain.ldif
+
+    ## Clean up previous LDAP configs and re-initialize
+    mkdir -p /etc/openldap/slapd.d
+    rm -rf /var/lib/openldap/*
+    cp -f /etc/openldap/DB_CONFIG.example /var/lib/openldap/DB_CONFIG
+
+
+    ## Check for error of slapd.conf
+    /usr/sbin/slaptest -u
+
+    ## Convert configs file into dynamic cofig under /etc/openldap/slapd.d dir
+    echo "" | slapadd -f /etc/openldap/slapd.conf
+    /usr/sbin/slaptest -f /etc/openldap/slapd.conf -F /etc/openldap/slapd.d
+    if [[ ! -f /var/run/openldap/slapd.pid ]]
+    then
+      log "Adding basic configuration ... "
+      /usr/lib/slapd -d 256 &
+      sleep 3s
+      /usr/bin/ldapadd -f /etc/openldap/domain.ldif -D "cn=Manager,${LDAP_SUFFIX}" -w ${LDAP_PASSWORD}
+      cat /var/run/openldap/slapd.pid | xargs kill
+      sleep 3s
+      log "Basic configuration added ... "
+    fi
+
+    ## Set permission to ldap
+    chown -Rf ldap. /etc/openldap/slapd.d/
+    chown -Rf ldap. /var/lib/openldap/
+    chown -Rf ldap. /var/run/openldap/
+
+    chmod 700 /var/lib/openldap/
+    chmod 700 /etc/openldap/slapd.d/
+
+    touch /etc/openldap/.configured
+  fi
+}
+
+run () {
+  if [[ ! -f /var/run/openldap/slapd.pid ]]
+  then
+    log "Starting OpenLDAP ..."
+    ulimit -n 1024 && /usr/lib/slapd -u ldap -g ldap -d 256
+  fi
+}
+
+main () {
+  configure
+  #run
+  exec $@
+}
+
+main $@
