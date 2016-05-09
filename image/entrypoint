@@ -16,21 +16,25 @@ configure () {
   if [[ ! -f /etc/openldap/.configured ]]
   then
     log "Setting up OpenLDAP configuration"
-    cat /etc/openldap/conf.tpl/slapd.conf.tpl  | envsubst > /etc/openldap/slapd.conf
-    cat /etc/openldap/conf.tpl/domain.ldif.tpl | envsubst > /etc/openldap/domain.ldif
+
 
     ## Clean up previous LDAP configs and re-initialize
-    mkdir -p /etc/openldap/slapd.d
+    cp -f /etc/openldap/DB_CONFIG.example /etc/openldap-conf/DB_CONFIG.example
+    #rm -rf /etc/openldap/*
     rm -rf /var/lib/openldap/*
-    cp -f /etc/openldap/DB_CONFIG.example /var/lib/openldap/DB_CONFIG
+    mkdir -p /etc/openldap/slapd.d
+    cp -f /etc/openldap-conf/DB_CONFIG.example /var/lib/openldap/DB_CONFIG
 
 
     ## Check for error of slapd.conf
-    /usr/sbin/slaptest -u
+    cat /etc/openldap-conf/slapd.conf.tpl  | envsubst > /etc/openldap/slapd.conf
+    cat /etc/openldap-conf/domain.ldif.tpl | envsubst > /etc/openldap/domain.ldif
+    #/usr/sbin/slaptest -u
 
     ## Convert configs file into dynamic cofig under /etc/openldap/slapd.d dir
     echo "" | slapadd -f /etc/openldap/slapd.conf
     /usr/sbin/slaptest -f /etc/openldap/slapd.conf -F /etc/openldap/slapd.d
+
     if [[ ! -f /var/run/openldap/slapd.pid ]]
     then
       log "Adding basic configuration ... "
@@ -54,18 +58,5 @@ configure () {
   fi
 }
 
-run () {
-  if [[ ! -f /var/run/openldap/slapd.pid ]]
-  then
-    log "Starting OpenLDAP ..."
-    ulimit -n 1024 && /usr/lib/slapd -u ldap -g ldap -d 256
-  fi
-}
-
-main () {
-  configure
-  #run
-  exec $@
-}
-
-main $@
+configure
+exec $@

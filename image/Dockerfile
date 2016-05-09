@@ -14,8 +14,8 @@ RUN apk --no-cache --no-progress add \
   openldap-back-bdb \
   ldapvi
 
-COPY conf/*.tpl /etc/openldap/conf.tpl/
-VOLUME ["/etc/openldap", "/var/lib/openldap"]
+COPY conf/*.tpl /etc/openldap-conf/
+VOLUME ["/etc/openldap/slapd.d", "/var/lib/openldap"]
 EXPOSE 389 636
 
 ADD entrypoint /bin/entrypoint
