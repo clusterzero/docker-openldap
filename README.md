@@ -9,8 +9,8 @@ docker run \
 --hostname ldap-service \
 --detach \
 -e LDAP_PASSWORD="s3cr3t" \
--e LDAP_DOMAIN="ldap.clusterzero.com" \
--e LDAP_ORGANIZATION="Clusterzero Inc." \
+-e LDAP_DOMAIN="example.com" \
+-e LDAP_ORGANIZATION="LDAP Server" \
 -v $PWD/slapd.volume/slapd.d:/etc/openldap/slapd.d \
 -v $PWD/slapd.volume/openldap:/var/lib/openldap \
 clusterzero/openldap:1.0.0
