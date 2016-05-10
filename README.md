@@ -26,5 +26,5 @@ docker run \
 osixia/phpldapadmin:0.6.8
 ```
 
-dn: `cn=Manager,dc=ldap,dc=clusterzero,dc=com`
+dn: `cn=Manager,dc=example,dc=com`
 password: `s3cr3t`
