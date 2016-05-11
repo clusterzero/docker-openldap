@@ -1,4 +1,7 @@
 # OpenLDAP
+
+[![Build Status](https://drone.cluster-zero.com/api/badges/Clusterzero/docker-openldap/status.svg)](https://drone.cluster-zero.com/Clusterzero/docker-openldap)
+
 OpenLDAP container based on Alpine Linux 3.3
 
 version 1.0.0
