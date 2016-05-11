@@ -1,0 +1,4 @@
+build:
+  image: alpine:3.3
+  commands:
+    - echo "Hello world"
