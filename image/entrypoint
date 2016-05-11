@@ -13,7 +13,7 @@ configure () {
 	export LDAP_SUFFIX="${LDAP_SUFFIX:-$(echo dc=$(echo ${LDAP_DOMAIN} | sed 's/^\.//; s/\./,dc=/g'))}"
 	export LDAP_DOMAIN=${LDAP_DOMAIN}
 
-  if [[ ! -f /etc/openldap/.configured ]]
+  if [[ ! -f /var/lib/openldap/.configured ]]
   then
     log "Setting up OpenLDAP configuration"
 
@@ -54,7 +54,7 @@ configure () {
     chmod 700 /var/lib/openldap/
     chmod 700 /etc/openldap/slapd.d/
 
-    touch /etc/openldap/.configured
+    touch /var/lib/openldap/.configured
   fi
 }
 
